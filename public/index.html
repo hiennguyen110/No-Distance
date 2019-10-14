@@ -11,10 +11,19 @@
 <body>
     <form class="container" id="message-input">
         <div class="form-group">
-            <label for="message-input">Enter new message:</label>
+            <label for="message-input"><b>Enter new message:</b></label>
             <input class="form-control" type="text" name="new_message" id="new-message">
         </div>
         <input class="btn btn-primary" type="submit" name="submit-message" id="submit-message" placeholder="Send Message">
+    </form>
+
+    <!-- Share the location for other people -->
+    <br>
+    <form class="container" id="share-location">
+        <div class="form-group">
+            <label for="share-location"><b>Share my location :]]]</b></label>
+        </div>
+        <button class="btn btn-primary" name="current-location" id="current-location">Send Location</button>
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/message.js"></script>
