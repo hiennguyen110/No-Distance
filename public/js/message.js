@@ -21,9 +21,12 @@ socket.on("newUser", (message) => {
 });
 
 socket.on("updatedMessage", (messages) => {
+        let timeFormat = moment(messages.createdAt).format("h:mm:s A");
+        console.log(messages.text);
+        console.log(timeFormat);
         const messageHTML = Mustache.render(messageTemplate, {
            message: messages.text,
-           createdAt: moment(messages.createdAt).format("h:mm:s A"), 
+           createdAt: timeFormat, 
         });
         $messageToRender.insertAdjacentHTML("beforeend", messageHTML);
 });
@@ -35,6 +38,13 @@ socket.on("iLocation", (latitude, longitude, location) => {
     });
     $messageToRender.insertAdjacentHTML("beforeend", locationHTML);
 });
+
+// Get the information from the query
+const {username, roomnumber} = Qs.parse(location.search, {ignoreQueryPrefix: true});
+
+socket.emit("join-roomchat", {username, roomnumber});
+
+
 
 $message_container.addEventListener("submit", (e) => {
     e.preventDefault();

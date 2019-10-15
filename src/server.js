@@ -14,13 +14,15 @@ const publicDirPath = path.join(__dirname, "../public/");
 
 app.use(express.static(publicDirPath));
 
-// This is the messages
 io.on("connection", (socket) => {
     const filter = new Filter();
     console.log("Accepting new connection ...");
-    
-    socket.emit("greetingMess", generateMessage("Hey, welcome to the town :}}}"));
-    socket.broadcast.emit("newUser", generateMessage("Added new user"));
+
+    socket.on("join-roomchat", ({username, chatrom}) => {
+        socket.join(chatrom);
+        socket.emit("greetingMess", generateMessage("Hey, welcome to the town :}}}"));
+        socket.broadcast.to(chatrom).emit("updatedMessage", generateMessage(`${username} has joined the room chat`));
+    });
 
     socket.on("new_message", (message, callback) => {
         if (filter.isProfane(message)){
@@ -48,10 +50,3 @@ io.on("connection", (socket) => {
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
-// The server will recieve the message from a client
-// The message will be checked if there is some bad words in it or not
-// The message will be returned back to the client using callback function
-
-// On the client side
-// In the sending function, the client will get a message using the callback
