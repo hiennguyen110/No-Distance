@@ -4,26 +4,36 @@ const $new_message = document.querySelector('#new-message');
 const $sendMessageBtn = document.querySelector('#submit-message');
 const $locationField = document.querySelector("#share-location");
 const $sharingLocationBtn = document.querySelector("#current-location");
+const $messageToRender = document.querySelector("#messages-to-render");
 
+// Message Template
+const messageTemplate = document.querySelector('#message-template').innerHTML;
+
+// Location Template
+const locationTemplate = document.querySelector("#location-template").innerHTML;
 
 socket.on("greetingMess", (message) => {
-    console.log(message);
+    console.log(message.text);
 });
 
 socket.on("newUser", (message) => {
-    console.log(message);
+    console.log(message.text);
 });
 
 socket.on("updatedMessage", (messages) => {
-    let len = messages.length;
-    if (len >  0){
-        len = len - 1;
-        console.log(messages[len]);
-    }
+        const messageHTML = Mustache.render(messageTemplate, {
+           message: messages.text,
+           createdAt: moment(messages.createdAt).format("h:mm:s A"), 
+        });
+        $messageToRender.insertAdjacentHTML("beforeend", messageHTML);
 });
 
-socket.on("iLocation", (latitude, longitude, link) => {
-    console.log(link);
+socket.on("iLocation", (latitude, longitude, location) => {
+    locationHTML = Mustache.render(locationTemplate, {
+        linkLocation: location.locationLink,
+        createdAt: moment(location.createdAt).format("h:mm:s A"),
+    });
+    $messageToRender.insertAdjacentHTML("beforeend", locationHTML);
 });
 
 $message_container.addEventListener("submit", (e) => {
@@ -35,12 +45,11 @@ $message_container.addEventListener("submit", (e) => {
         $new_message.value = " ";
         $new_message.focus();
         // The second message is the callback from the server
-        console.log(message);
+        console.log(message.text);
     });
 });
 
-$locationField.addEventListener("submit", (e) => {
-    e.preventDefault();
+$sharingLocationBtn.addEventListener("click", () => {
     $sharingLocationBtn.setAttribute('disabled', 'disabled');
     console.log("Activate Location Function");
     if (!navigator.geolocation){
