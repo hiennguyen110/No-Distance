@@ -41,8 +41,14 @@ socket.on("iLocation", (latitude, longitude, location) => {
 
 // Get the information from the query
 const {username, roomnumber} = Qs.parse(location.search, {ignoreQueryPrefix: true});
+console.log(username, roomnumber);
 
-socket.emit("join-roomchat", {username, roomnumber});
+socket.emit("join-roomchat", {username, roomnumber}, (error) =>{
+    if (error){
+        alert(error);
+        location.href = "/";
+    }
+});
 
 
 

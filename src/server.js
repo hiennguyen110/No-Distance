@@ -4,6 +4,7 @@ const http = require("http");
 const path = require("path");
 const Filter = require("bad-words");
 const {generateMessage, generateLocationMessage} = require("./utils/message.js");
+const {addUser, removeUser, getUser, getUsersInRoom} = require("./utils/users.js");
 
 const app = express();
 const server = http.createServer(app);
@@ -13,15 +14,27 @@ const port = process.env.PORT || 3000;
 const publicDirPath = path.join(__dirname, "../public/");
 
 app.use(express.static(publicDirPath));
+app.use((req, res, next) => {   
+    req.io = io;
+    next();
+});
 
 io.on("connection", (socket) => {
     const filter = new Filter();
     console.log("Accepting new connection ...");
 
-    socket.on("join-roomchat", ({username, chatrom}) => {
-        socket.join(chatrom);
-        socket.emit("greetingMess", generateMessage("Hey, welcome to the town :}}}"));
-        socket.broadcast.to(chatrom).emit("updatedMessage", generateMessage(`${username} has joined the room chat`));
+    socket.on("join-roomchat", ({username, roomnumber}, callback) => {
+        console.log(username);
+        console.log(roomnumber);
+        const {error, user} = addUser({id: socket.id, username: username, room: roomnumber});
+        if (error){
+            return callback(error);
+        } else {
+            socket.join(user.room);
+            socket.emit("greetingMess", generateMessage("Hey, welcome to the town :}}}"));
+            socket.broadcast.to(user.room).emit("updatedMessage", generateMessage(`${user.username} has joined the room chat`));
+            callback();
+        }
     });
 
     socket.on("new_message", (message, callback) => {
@@ -43,7 +56,14 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-        io.emit("updatedMessage", generateMessage("A friend has left the town :[[["));
+        if (socket.id !== null){
+            const user = removeUser({id: socket.id});
+            if (user) {
+                io.to(user.room).emit("updatedMessage", generateMessage("A friend has left the town :[[["));
+            } 
+        } else {
+            return
+        }
     });
 });
 
