@@ -21,7 +21,6 @@ app.use((req, res, next) => {
 
 io.on("connection", (socket) => {
     const filter = new Filter();
-    console.log("Accepting new connection ...");
 
     socket.on("join-roomchat", ({username, roomnumber}, callback) => {
         console.log(username);
@@ -31,8 +30,12 @@ io.on("connection", (socket) => {
             return callback(error);
         } else {
             socket.join(user.room);
-            socket.emit("greetingMess", generateMessage("Hey, welcome to the town :}}}"));
-            socket.broadcast.to(user.room).emit("updatedMessage", generateMessage(`${user.username} has joined the room chat`));
+            socket.emit("updatedMessage", generateMessage("System", "Welcome to the town :]]"));
+            socket.broadcast.to(user.room).emit("updatedMessage", generateMessage(user.username, `${user.username} has joined the room chat`));
+            io.to(user.room).emit("roomdata", {
+                room: user.room,
+                users: getUsersInRoom({room: user.room}),
+            });
             callback();
         }
     });
@@ -41,9 +44,9 @@ io.on("connection", (socket) => {
         if (filter.isProfane(message)){
             return callback("This message contains some bad words ...");
         } else {
-            console.log("Sending updated message back to the client ...");
-            io.emit("updatedMessage", generateMessage(message));
-            callback(generateMessage("Passed !!!"));
+            const user = getUser({id: socket.id});
+            io.to(user.room).emit("updatedMessage", generateMessage(user.username, message));
+            callback(generateMessage(user.username, "Passed !!!"));
         }
     });
 
@@ -51,7 +54,8 @@ io.on("connection", (socket) => {
         console.log("New location recieved from the user ...");
         console.log("Latitude: ", location.latitude);
         console.log("Longtitude: ", location.longtitude);
-        io.emit("iLocation", location.latitude, location.longtitude, generateLocationMessage(location.locationLink));
+        const user = getUser({id: socket.id});
+        io.to(user.room).emit("iLocation", location.latitude, location.longtitude, generateLocationMessage(user.username, location.locationLink));
         return callback("Location has been shared to the public ...");
     });
 
@@ -59,7 +63,11 @@ io.on("connection", (socket) => {
         if (socket.id !== null){
             const user = removeUser({id: socket.id});
             if (user) {
-                io.to(user.room).emit("updatedMessage", generateMessage("A friend has left the town :[[["));
+                io.to(user.room).emit("updatedMessage", generateMessage("System",  `${user.username} has left the town :[[`));
+                io.to(user.room).emit("roomdata", {
+                    room: user.room,
+                    users: getUsersInRoom({room: user.room}),
+                });
             } 
         } else {
             return

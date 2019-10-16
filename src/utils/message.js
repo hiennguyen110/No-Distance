@@ -1,12 +1,14 @@
- const generateMessage = (text) => {
+ const generateMessage = (username, text) => {
     return {
+        username,
         text,
         createdAt: new Date().getTime(),
     };
  };
 
-const generateLocationMessage = (locationLink) => {
+const generateLocationMessage = (username, locationLink) => {
     return {
+        username,
         locationLink,
         createdAt: new Date().getTime(),
     }

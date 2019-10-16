@@ -13,7 +13,7 @@
 <body>
 
     <div class="chat">
-        <div class="chat__sidebar">
+        <div id="sidebar" class="chat__sidebar">
 
         </div>
 
@@ -24,7 +24,7 @@
             <div class="compose">
                 <div class="container">
                     <form class="form-group" id="message-input">
-                        <input class="form-control" placeholder="Enter new message" type="text" name="new_message" id="new-message">
+                        <input class="form-control" placeholder="Enter new message" type="text" name="new_message" id="new-message" required autocomplete="off">
                     </form>
                     <button class="btn btn-danger" name="current-location" id="current-location">Send Location</button>
                     <button class="btn btn-primary" name="submit-message" id="submit-message">Send Message</button>
@@ -37,7 +37,7 @@
     <script id="message-template" type="text/html">
         <div class="message">
             <p>
-                <span class="message__name">Username</span>
+                <span class="message__name">{{username}}</span>
                 <span class="message__meta">{{createdAt}}</span>
             </p>  
             <b><p>{{message}}</p></b>
@@ -48,12 +48,23 @@
         <div class="message">
             <div class="form-group">
                 <p>
-                    <span class="message__name">Username</span>
+                    <span class="message__name">{{username}}</span>
                     <span class="message__meta">{{createdAt}}</span>
                 </p>
                 <p><b><a href="{{linkLocation}}" target="_blank">View Location</a></b></p>
             </div>
         </div>
+    </script>
+
+    <script id="sidebar-template" type="text/html">
+        <h2 class="list-title">Room Chat</h2>
+        <h2 class="room-title">{{room}}</h2>
+        <h3 class="list-title">Current Users</h3>
+        <ul class="users">
+            {{#users}}
+                <li>{{username}}</li>
+            {{/users}}
+        </ul>
     </script>
 
     <!-- Share the location for other people -->

@@ -5,6 +5,7 @@ const $sendMessageBtn = document.querySelector('#submit-message');
 const $locationField = document.querySelector("#share-location");
 const $sharingLocationBtn = document.querySelector("#current-location");
 const $messageToRender = document.querySelector("#messages-to-render");
+const $sideBarRoomInfo = document.querySelector("#sidebar");
 
 // Message Template
 const messageTemplate = document.querySelector('#message-template').innerHTML;
@@ -12,27 +13,32 @@ const messageTemplate = document.querySelector('#message-template').innerHTML;
 // Location Template
 const locationTemplate = document.querySelector("#location-template").innerHTML;
 
-socket.on("greetingMess", (message) => {
-    console.log(message.text);
-});
-
-socket.on("newUser", (message) => {
-    console.log(message.text);
-});
+// Room information title
+const roomInfoTemplate = document.querySelector("#sidebar-template").innerHTML;
 
 socket.on("updatedMessage", (messages) => {
         let timeFormat = moment(messages.createdAt).format("h:mm:s A");
-        console.log(messages.text);
-        console.log(timeFormat);
         const messageHTML = Mustache.render(messageTemplate, {
-           message: messages.text,
-           createdAt: timeFormat, 
+            username: messages.username,
+            message: messages.text,
+            createdAt: timeFormat, 
         });
         $messageToRender.insertAdjacentHTML("beforeend", messageHTML);
+        // This one will insert the next element after the previous one
+});
+
+socket.on("roomdata", ({room, users}) => {
+    const roomInfoHTML = Mustache.render(roomInfoTemplate, {
+        room: room,
+        users: users,
+    });
+    $sideBarRoomInfo.innerHTML = roomInfoHTML;
+    // This one will replace the whole thing and print the new one out 
 });
 
 socket.on("iLocation", (latitude, longitude, location) => {
     locationHTML = Mustache.render(locationTemplate, {
+        username: location.username,
         linkLocation: location.locationLink,
         createdAt: moment(location.createdAt).format("h:mm:s A"),
     });
